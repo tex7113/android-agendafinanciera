@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "995004597256",
+    "firebase_url": "https://agendafinanciera-90400-default-rtdb.firebaseio.com",
     "project_id": "agendafinanciera-90400",
     "storage_bucket": "agendafinanciera-90400.firebasestorage.app"
   },

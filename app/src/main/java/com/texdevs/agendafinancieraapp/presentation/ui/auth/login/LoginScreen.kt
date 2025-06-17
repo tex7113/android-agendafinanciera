@@ -1,4 +1,4 @@
-package com.texdevs.agendafinancieraapp.presentation.ui.signup
+package com.texdevs.agendafinancieraapp.presentation.ui.auth.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -23,17 +23,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import com.texdevs.agendafinancieraapp.R
 import com.texdevs.agendafinancieraapp.ui.theme.SelectedField
 import com.texdevs.agendafinancieraapp.ui.theme.UnselectedField
 import com.texdevs.agendafinancieraapp.ui.theme.Yellow
 
-@Preview
 @Composable
-fun SignupScreen() {
+fun LoginScreen(navigateToHome: () -> Unit = {}, auth: FirebaseAuth) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -57,35 +60,42 @@ fun SignupScreen() {
             Spacer(modifier = Modifier.weight(1f))
         }
 
-        Text("Correo electrónico", color = White, fontWeight = FontWeight.Bold, fontSize = 38.sp)
+        Text("Email", color = White, fontWeight = FontWeight.Bold, fontSize = 40.sp)
         TextField(
             value = email,
             onValueChange = { email = it },
-            modifier = Modifier.fillMaxWidth()
-                .padding(vertical = 24.dp),
+            modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = UnselectedField,
                 focusedContainerColor = SelectedField
             )
         )
         Spacer(Modifier.height(48.dp))
-        Text("Contraseña", color = White, fontWeight = FontWeight.Bold, fontSize = 38.sp)
+        Text("Password", color = White, fontWeight = FontWeight.Bold, fontSize = 40.sp)
         TextField(
             value = password,
             onValueChange = { password = it },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+            modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = UnselectedField,
                 focusedContainerColor = SelectedField
-            )
+            ),
+            visualTransformation = PasswordVisualTransformation(), // Oculta la contraseña
+            singleLine = true
         )
 
         Spacer(Modifier.height(48.dp))
 
         Row {
             Spacer(modifier = Modifier.weight(1f))
-            Button(onClick = { }) {
-                Text(text = "Registrarse", fontSize = 18.sp)
+            Button(onClick = {
+                auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
+                    if (it.isSuccessful){
+                        navigateToHome()
+                    }
+                }
+            }) {
+                Text(text = "Login", fontSize = 18.sp)
             }
             Spacer(modifier = Modifier.weight(1f))
         }

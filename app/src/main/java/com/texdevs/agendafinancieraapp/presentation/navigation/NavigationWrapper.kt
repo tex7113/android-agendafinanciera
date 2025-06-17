@@ -1,16 +1,21 @@
 package com.texdevs.agendafinancieraapp.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.google.firebase.auth.FirebaseAuth
 import com.texdevs.agendafinancieraapp.presentation.ui.home.HomeScreen
-import com.texdevs.agendafinancieraapp.presentation.ui.login.LoginScreen
-import com.texdevs.agendafinancieraapp.presentation.ui.signup.SignupScreen
+import com.texdevs.agendafinancieraapp.presentation.ui.auth.login.LoginScreen
+import com.texdevs.agendafinancieraapp.presentation.ui.auth.signup.SignupScreen
+import com.texdevs.agendafinancieraapp.presentation.ui.auth.viewmodel.AuthViewModel
 import com.texdevs.agendafinancieraapp.presentation.ui.splash.SplashScreen
 
 @Composable
-fun NavigationWrapper(navHostController: NavHostController) {
+fun NavigationWrapper(navHostController: NavHostController, auth: FirebaseAuth) {
+
+    val authViewModel: AuthViewModel = viewModel()
 
     NavHost(navController = navHostController, startDestination = Splash){
 
@@ -22,11 +27,18 @@ fun NavigationWrapper(navHostController: NavHostController) {
         }
 
         composable<Login> {
-            LoginScreen()
+            LoginScreen(
+                navigateToHome = {navHostController.navigate(Home)},
+                auth
+            )
         }
 
         composable<SignUp> {
-            SignupScreen()
+            SignupScreen(
+                navigateToLogin = {
+                    navHostController.navigate(Login)},
+                viewModel = authViewModel
+            )
         }
 
         composable<Home> {
