@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.texdevs.agendafinancieraapp.domain.model.User
+import com.texdevs.agendafinancieraapp.presentation.ui.auth.login.LoginState
 import com.texdevs.agendafinancieraapp.presentation.ui.auth.signup.SignUpState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +17,43 @@ class AuthViewModel : ViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val firebaseDatabase = FirebaseDatabase.getInstance()
 
+    private val _loginState = mutableStateOf(LoginState())
+    val loginState: State<LoginState> = _loginState
+
     private val _signUpState = mutableStateOf(SignUpState())
     val signUpState: State<SignUpState> = _signUpState
+
+    fun onLoginEmailChange(value: String) {
+        _loginState.value = _loginState.value.copy(email = value)
+    }
+
+    fun onLoginPasswordChange(value: String) {
+        _loginState.value = _loginState.value.copy(password = value)
+    }
+
+    fun loginUser(onSuccess: () -> Unit) {
+        val state = _loginState.value
+
+        if (state.email.isBlank() || state.password.isBlank()) {
+            _loginState.value = state.copy(error = "Completa todos los campos")
+            return
+        }
+
+        _loginState.value = state.copy(isLoading = true)
+
+        firebaseAuth.signInWithEmailAndPassword(state.email, state.password)
+            .addOnCompleteListener {
+                if (it.isSuccessful){
+                    _loginState.value = LoginState()
+                    onSuccess()
+                }else {
+                    _loginState.value = state.copy(
+                        error = it.exception?.message,
+                        isLoading = false
+                    )
+                }
+            }
+    }
 
     fun onNameChange(value: String) {
         _signUpState.value = _signUpState.value.copy(name = value)

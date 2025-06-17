@@ -32,4 +32,14 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    override fun onStart() {
+        super.onStart()
+        val currentUser = auth.currentUser
+        if (currentUser!=null){
+            //Navigate to home
+            Log.i("Tex","Estoy logado")
+
+            auth.signOut()
+        }
+    }
 }

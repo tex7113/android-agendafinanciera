@@ -28,8 +28,10 @@ fun NavigationWrapper(navHostController: NavHostController, auth: FirebaseAuth) 
 
         composable<Login> {
             LoginScreen(
-                navigateToHome = {navHostController.navigate(Home)},
-                auth
+                navigateToHome = {navHostController.navigate(Home) {
+                    popUpTo(Login) { inclusive = true }
+                }},
+                viewModel = authViewModel
             )
         }
 

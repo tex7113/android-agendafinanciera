@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -20,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,15 +34,21 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.texdevs.agendafinancieraapp.R
+import com.texdevs.agendafinancieraapp.presentation.ui.auth.viewmodel.AuthViewModel
 import com.texdevs.agendafinancieraapp.ui.theme.SelectedField
 import com.texdevs.agendafinancieraapp.ui.theme.UnselectedField
 import com.texdevs.agendafinancieraapp.ui.theme.Yellow
 
 @Composable
-fun LoginScreen(navigateToHome: () -> Unit = {}, auth: FirebaseAuth) {
+fun LoginScreen(
+    navigateToHome: () -> Unit,
+    viewModel: AuthViewModel = AuthViewModel()
+) {
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val state by viewModel.loginState
+
+//    var email by remember { mutableStateOf("") }
+//    var password by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -61,9 +70,9 @@ fun LoginScreen(navigateToHome: () -> Unit = {}, auth: FirebaseAuth) {
         }
 
         Text("Email", color = White, fontWeight = FontWeight.Bold, fontSize = 40.sp)
-        TextField(
-            value = email,
-            onValueChange = { email = it },
+        OutlinedTextField(
+            value = state.email,
+            onValueChange =  {viewModel.onLoginEmailChange(it)},
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = UnselectedField,
@@ -72,9 +81,9 @@ fun LoginScreen(navigateToHome: () -> Unit = {}, auth: FirebaseAuth) {
         )
         Spacer(Modifier.height(48.dp))
         Text("Password", color = White, fontWeight = FontWeight.Bold, fontSize = 40.sp)
-        TextField(
-            value = password,
-            onValueChange = { password = it },
+        OutlinedTextField(
+            value = state.password,
+            onValueChange = { viewModel.onLoginPasswordChange(it) },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = UnselectedField,
@@ -83,18 +92,21 @@ fun LoginScreen(navigateToHome: () -> Unit = {}, auth: FirebaseAuth) {
             visualTransformation = PasswordVisualTransformation(), // Oculta la contraseña
             singleLine = true
         )
+        Spacer(Modifier.height(10.dp))
+
+        state.error?.let {
+            Text(text = it, color = Color.Red)
+        }
+        if (state.isLoading) {
+            Spacer(modifier = Modifier.height(8.dp))
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
 
         Spacer(Modifier.height(48.dp))
 
         Row {
             Spacer(modifier = Modifier.weight(1f))
-            Button(onClick = {
-                auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
-                    if (it.isSuccessful){
-                        navigateToHome()
-                    }
-                }
-            }) {
+            Button(onClick = { viewModel.loginUser(navigateToHome) }) {
                 Text(text = "Login", fontSize = 18.sp)
             }
             Spacer(modifier = Modifier.weight(1f))
