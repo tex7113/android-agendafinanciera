@@ -13,3 +13,18 @@ object SignUp
 
 @Serializable
 object Home
+
+@Serializable
+object Transactions
+
+@Serializable
+object Profile
+
+@Serializable
+object Menu
+
+@Serializable
+object AddIncome
+
+@Serializable
+object addExpense

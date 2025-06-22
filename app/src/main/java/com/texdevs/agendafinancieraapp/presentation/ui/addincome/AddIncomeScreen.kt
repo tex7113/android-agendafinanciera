@@ -1,0 +1,142 @@
+package com.texdevs.agendafinancieraapp.presentation.ui.addincome
+
+import android.app.DatePickerDialog
+import android.os.Build
+import android.widget.DatePicker
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun AddIncomeScreen(
+    viewModel: AddIncomeViewModel,
+    uid: String?,
+    navController: NavController
+) {
+    val context = LocalContext.current
+    val state = viewModel.state
+
+    var date by remember { mutableStateOf(LocalDate.now()) }
+    val dateFormatted = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+    viewModel.onDateChanged(dateFormatted)
+
+    val calendar = Calendar.getInstance()
+    val datePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
+                date = LocalDate.of(year, month + 1, dayOfMonth)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        Text(
+            text = "Añadir Ingreso",
+            style = MaterialTheme.typography.headlineSmall
+        )
+
+        OutlinedTextField(
+            value = state.description,
+            onValueChange = { viewModel.onDescriptionChanged(it) },
+            label = { Text("Descripción") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = state.amount,
+            onValueChange = {
+                if (it.all { char -> char.isDigit() || char == '.' }) {
+                    viewModel.onAmountChanged(it)
+                }
+            },
+            label = { Text("Monto") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Fecha: $dateFormatted", style = MaterialTheme.typography.bodyLarge)
+            Button(onClick = {
+                datePickerDialog.show()
+            }) {
+                Icon(Icons.Default.DateRange, contentDescription = "Elegir fecha")
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Cambiar")
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = {
+                if (uid != null) {
+                    viewModel.saveIncome(
+                        userId = uid,
+                        onSuccess = {
+                            navController.popBackStack()
+                        },
+                        onError = {
+                            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                } else {
+                    Toast.makeText(context, "Usuario no autenticado", Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(Icons.Default.Check, contentDescription = "Guardar")
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Guardar ingreso")
+        }
+    }
+}

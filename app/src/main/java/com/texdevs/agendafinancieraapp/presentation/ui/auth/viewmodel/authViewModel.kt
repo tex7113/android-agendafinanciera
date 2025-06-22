@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.texdevs.agendafinancieraapp.domain.model.User
+import com.texdevs.agendafinancieraapp.domain.model.UserProfile
 import com.texdevs.agendafinancieraapp.presentation.ui.auth.login.LoginState
 import com.texdevs.agendafinancieraapp.presentation.ui.auth.signup.SignUpState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,10 +44,10 @@ class AuthViewModel : ViewModel() {
 
         firebaseAuth.signInWithEmailAndPassword(state.email, state.password)
             .addOnCompleteListener {
-                if (it.isSuccessful){
+                if (it.isSuccessful) {
                     _loginState.value = LoginState()
                     onSuccess()
-                }else {
+                } else {
                     _loginState.value = state.copy(
                         error = it.exception?.message,
                         isLoading = false
@@ -84,8 +85,13 @@ class AuthViewModel : ViewModel() {
                     val uid = task.result?.user?.uid ?: return@addOnCompleteListener
                     val newUser = User(
                         id = uid,
-                        name = state.name,
-                        email = state.email
+                        profile = UserProfile(
+                            name = state.name,
+                            email = state.email,
+                            password = state.password,
+                            totalMoney = 0.0,
+                            moneySaved = 0.0
+                        )
                     )
 
                     firebaseDatabase.getReference("users")
@@ -96,7 +102,8 @@ class AuthViewModel : ViewModel() {
                             onSuccess()
                         }
                         .addOnFailureListener {
-                            _signUpState.value = state.copy(error = "Error guardando datos: ${it.message}")
+                            _signUpState.value =
+                                state.copy(error = "Error guardando datos: ${it.message}")
                         }
                 } else {
                     _signUpState.value = state.copy(error = task.exception?.message)
