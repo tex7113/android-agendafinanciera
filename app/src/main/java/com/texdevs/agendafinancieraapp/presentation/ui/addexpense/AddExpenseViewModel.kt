@@ -1,19 +1,18 @@
-package com.texdevs.agendafinancieraapp.presentation.ui.addincome
+package com.texdevs.agendafinancieraapp.presentation.ui.addexpense
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.texdevs.agendafinancieraapp.domain.model.Income
-import com.texdevs.agendafinancieraapp.domain.repository.IncomeRepository
-import kotlinx.coroutines.launch
+import com.texdevs.agendafinancieraapp.domain.model.Expense
+import com.texdevs.agendafinancieraapp.domain.repository.ExpenseRepository
+import com.texdevs.agendafinancieraapp.domain.usecase.AddExpenseUseCase
 
-class AddIncomeViewModel(
-    private val repository: IncomeRepository
+class AddExpenseViewModel(
+    private val addExpenseUseCase: AddExpenseUseCase
 ) : ViewModel() {
 
-    var state by mutableStateOf(AddIncomeState())
+    var state by mutableStateOf(AddExpenseState())
         private set
 
     fun onDescriptionChanged(value: String) {
@@ -30,24 +29,29 @@ class AddIncomeViewModel(
         state = state.copy(date = value)
     }
 
-    fun saveIncome(userId: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
-
+    fun saveExpense(
+        userId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         val amount = state.amount.toDoubleOrNull()
         if (state.description.isBlank() || amount == null || state.date.isBlank()) {
             onError("Por favor completa todos los campos correctamente")
             return
         }
-        val income = Income(
+
+        val expense = Expense(
             description = state.description,
-            amount = state.amount.toDouble(),
-            date = state.date
+            amount = amount,
+            date = state.date,
+            paid = false
         )
 
-        viewModelScope.launch {
-            val result = repository.addIncome(userId, income)
-            result
-                .onSuccess { onSuccess() }
-                .onFailure { onError(it.message ?: "Error desconocido") }
-        }
+        addExpenseUseCase(
+            userId = userId,
+            expense = expense,
+            onSuccess = onSuccess,
+            onError = onError
+        )
     }
 }

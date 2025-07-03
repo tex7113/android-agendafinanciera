@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
@@ -62,21 +63,17 @@ fun AddIncomeScreen(
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
+            calendar.get(Calendar.DAY_OF_MONTH),
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        Text(
-            text = "Añadir Ingreso",
-            style = MaterialTheme.typography.headlineSmall
-        )
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .systemBarsPadding()
+        .padding(16.dp)) {
+        Text("Agregar Gasto", style = MaterialTheme.typography.headlineSmall)
+
+        Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
             value = state.description,
@@ -86,6 +83,8 @@ fun AddIncomeScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        Spacer(Modifier.height(8.dp))
+
         OutlinedTextField(
             value = state.amount,
             onValueChange = {
@@ -94,10 +93,12 @@ fun AddIncomeScreen(
                 }
             },
             label = { Text("Monto") },
-            singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(Modifier.height(8.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -116,24 +117,19 @@ fun AddIncomeScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
-            onClick = {
-                if (uid != null) {
-                    viewModel.saveIncome(
-                        userId = uid,
-                        onSuccess = {
-                            navController.popBackStack()
-                        },
-                        onError = {
-                            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                        }
-                    )
-                } else {
-                    Toast.makeText(context, "Usuario no autenticado", Toast.LENGTH_SHORT).show()
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Button(onClick = {
+            if (uid != null) {
+                viewModel.saveIncome(
+                    userId = uid,
+                    onSuccess = { navController.popBackStack() },
+                    onError = {
+                        Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
+        },
+            modifier = Modifier.fillMaxWidth())
+        {
             Icon(Icons.Default.Check, contentDescription = "Guardar")
             Spacer(modifier = Modifier.width(8.dp))
             Text("Guardar ingreso")

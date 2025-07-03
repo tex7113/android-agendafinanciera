@@ -18,7 +18,9 @@ import com.texdevs.agendafinancieraapp.presentation.ui.auth.viewmodel.AuthViewMo
 import com.texdevs.agendafinancieraapp.presentation.ui.profile.ProfileScreen
 import com.texdevs.agendafinancieraapp.presentation.ui.splash.SplashScreen
 import com.texdevs.agendafinancieraapp.presentation.ui.Transactions.TransactionsScreen
+import com.texdevs.agendafinancieraapp.presentation.ui.addexpense.AddExpenseViewModel
 import com.texdevs.agendafinancieraapp.presentation.ui.addincome.AddIncomeViewModel
+import com.texdevs.agendafinancieraapp.presentation.ui.home.HomeViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -26,7 +28,9 @@ fun NavigationWrapper(
     navHostController: NavHostController,
     auth: FirebaseAuth,
     authViewModel: AuthViewModel,
-    addIncomeViewModel: AddIncomeViewModel
+    addIncomeViewModel: AddIncomeViewModel,
+    addExpenseViewModel: AddExpenseViewModel,
+    homeViewModel: HomeViewModel
     ) {
 
     val startDestination = remember {
@@ -63,7 +67,9 @@ fun NavigationWrapper(
 
         composable<Home> {
             HomeScreen(
-               navigateToAddIcome = {
+                viewModel = homeViewModel,
+
+               navigateToAddIncome = {
                    navHostController.navigate(AddIncome)
                },
                 navigateToAddExpense = {
@@ -74,7 +80,9 @@ fun NavigationWrapper(
 
         composable<Menu> {
             BottonNavScreen(
-                navigateToAddIcome = {
+                homeViewModel = homeViewModel,
+
+                navigateToAddIncome = {
                     navHostController.navigate(AddIncome)
                 },
                 navigateToAddExpense = {
@@ -100,7 +108,11 @@ fun NavigationWrapper(
         }
 
         composable<addExpense> {
-            AddExpenseScreen()
+            AddExpenseScreen(
+                viewModel = addExpenseViewModel,
+                uid = uid,
+                navController = navHostController
+            )
         }
     }
 }
